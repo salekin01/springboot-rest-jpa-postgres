@@ -1,0 +1,43 @@
+version: '3'
+services:
+  dpostgres:
+    image: postgres
+    container_name: dpostgres
+    restart: always
+    ports:
+      - 54321:5432
+    environment:
+      POSTGRES_DB: db_springboot_rest_jpa_postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: sa1234
+    volumes:
+      - postgres-volumn:/var/lib/postgresql/data
+#     - ./postgres-dump:/docker-entrypoint-initdb.d
+#     - C/:Users/salekin/Desktop/dpostgresVal:/var/lib/postgresql/data
+    networks:
+      - network-back
+
+  dspringboot:
+    build:
+      context: ./
+    #      dockerfile: dockerfile-alternate
+    container_name: dspringboot
+    ports:
+      - 8080:80
+    expose:
+      - 8086
+    depends_on:
+      - dpostgres
+    networks:
+      - network-front
+      - network-back
+
+volumes:
+  postgres-volumn:
+    driver: local
+#      external: true
+networks:
+  network-front:
+    driver: bridge
+  network-back:
+    driver: bridge
