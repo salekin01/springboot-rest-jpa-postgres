@@ -6,9 +6,9 @@ Exploring SpringBoot REST API application using thymeleaf, Docker, ActiveMQ Arte
 		<li>Openjdk 11</li>
 		<li>Postgresql 42.2.8</li>
 		<li>Flywaydb 6.0.8</li>
-  	<li>Openjdk 11</li>
+  		<li>Data JPA</li>
 		<li>Thymeleaf</li>
 		<li>ActiveMQ Artemis 2.10.1</li>
-    <li>Docker 19.03.4</li>
-    <li>Docker-compose 3.7</li>
+    		<li>Docker 19.03.4</li>
+    		<li>Docker-compose 3.7</li>
 	</ul>
