@@ -3,6 +3,7 @@ package springboot_rest_jpa_postgres;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.jms.JMSException;
 import java.util.List;
 import java.util.Map;
 
@@ -54,5 +55,22 @@ public class BlogController {
         //blogRespository.delete(blogId);
         blogRespository.deleteById(blogId);
         return true;
+    }
+    //-------------------------------------------------------------------
+    @Autowired
+    ArtemisProducer artemisProducer;
+
+    @RequestMapping(value="/send")
+    public String produce(@RequestParam("msg")String msg){
+        artemisProducer.send(msg);
+        return "Message send successfully";
+    }
+
+    @Autowired
+    ArtemisConsumer artemisConsumer;
+
+    @RequestMapping(value = "/receive")
+    public void receive(String msg) throws JMSException {
+        artemisConsumer.receive(msg);
     }
 }
