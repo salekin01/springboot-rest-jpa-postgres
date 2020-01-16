@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 services:
   dpostgres:
     image: postgres
@@ -23,19 +23,99 @@ services:
     #      dockerfile: dockerfile-alternate
     container_name: dspringboot
     ports:
-      - 8080:80
+      - 8086:8080
     expose:
       - 8086
+    environment:
+      spring.datasource.url: jdbc:postgresql://dpostgres:5432/db_springboot_rest_jpa_postgres?createDatabaseIfNotExist=true&useSSL=false&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+      spring.datasource.username: postgres
+      spring.datasource.password: sa1234
+      spring.artemis.host: dactivemq
+      spring.artemis.port: 61616
+      spring.artemis.user: amq
+      spring.artemis.password: sa1234
+      jms.queue.destination: myqueue
+
+      #SPRING_PROFILES_ACTIVE: prod
+      #SPRING_DATASOURCE_URL: spring.datasource.url=jdbc:postgresql://dpostgres:5432/db_springboot_rest_jpa_postgres?createDatabaseIfNotExist=true&useSSL=false&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+      #SPRING_DATASOURCE_USERNAME: postgres
+      #SPRING_DATASOURCE_PASSWORD: sa1234
+
+      #SPRING_ARTEMIS_HOST: dactivemq
+      #SPRING_ARTEMIS_PORT: 61616
+      #SPRING_ARTEMIS_USER: amq
+      #SPRING_ARTEMIS_PASSWORD: sa1234
+      #JMS_QUEUE_DESTINATION: myqueue
+    depends_on:
+      - dpostgres
+      - dactivemq
+    networks:
+      - network-front
+      - network-back
+
+  dpgadmin4:
+    image: dpage/pgadmin4:latest
+    container_name: dpgadmin4
+    ports:
+      - 15432:80
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
+      - PGADMIN_DEFAULT_PASSWORD=sa1234
     depends_on:
       - dpostgres
     networks:
       - network-front
       - network-back
 
+  dactivemq:
+    image: vromero/activemq-artemis:latest
+    container_name: dactivemq
+    ports:
+      - 8161:8161
+      - 61616:61616
+    environment:
+      - ARTEMIS_USERNAME=amq
+      - ARTEMIS_PASSWORD=sa1234
+      - ARTEMIS_MIN_MEMORY=1512M
+      - ARTEMIS_MAX_MEMORY=3048M
+      - DISABLE_SECURITY=false
+      - BROKER_CONFIG_GLOBAL_MAX_SIZE=50000
+      - BROKER_CONFIG_DISK_SCAN_PERIOD=6000
+    volumes:
+      - amq-data:/var/lib/artemis/data
+      - amq-etc:/var/lib/artemis/etc
+      - amq-etc-override:/var/lib/artemis/etc-override
+    #      - amq-lock:/var/lib/artemis/lock
+    #      - amq-jmx-exporter:/opt/jmx-exporter/etc-override
+    networks:
+      - network-front
+      - network-back
+
+  dconsumer:
+    build:
+      context: D:/Work/IntelliJ_Project/artemis-consumer
+    container_name: dconsumer
+    ports:
+      - 8087:8080
+    expose:
+      - 8087
+    environment:
+      spring.artemis.host: dactivemq
+    depends_on:
+      - dactivemq
+    networks:
+      - network-front
+
 volumes:
   postgres-volumn:
     driver: local
-#      external: true
+  #      external: true
+  amq-data:
+    driver: local
+  amq-etc:
+    driver: local
+  amq-etc-override:
+    driver: local
 networks:
   network-front:
     driver: bridge
